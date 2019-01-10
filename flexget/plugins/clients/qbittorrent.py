@@ -28,6 +28,8 @@ class OutputQBitTorrent(object):
         verify_cert: <VERIFY> (default: True)
         path: <OUTPUT_DIR> (default: (none))
         label: <LABEL> (default: (none))
+        up_limit: <UPLIMIT> (default: 0)
+        down_limit: <DOWNLIMIT> (default: 0)
     """
     schema = {
         'anyOf': [
@@ -43,6 +45,8 @@ class OutputQBitTorrent(object):
                     'verify_cert': {'type': 'boolean'},
                     'path': {'type': 'string'},
                     'label': {'type': 'string'},
+                    'up_limit': {'type': 'integer'},
+                    'down_limit': {'type': 'integer'},
                     'fail_html': {'type': 'boolean'}
                 },
                 'additionalProperties': False
@@ -105,12 +109,18 @@ class OutputQBitTorrent(object):
         config.setdefault('use_ssl', False)
         config.setdefault('verify_cert', True)
         config.setdefault('label', '')
+        config.setdefault('up_limit', 0)
+        config.setdefault('down_limit', 0)
         config.setdefault('fail_html', True)
         return config
 
     def add_entries(self, task, config):
         for entry in task.accepted:
             form_data = {}
+            if config['up_limit'] > 0:
+                form_data['upLimit'] = config['up_limit']
+            if config['down_limit'] > 0:
+                form_data['dlLimit'] = config['down_limit']
             try:
                 save_path = entry.render(entry.get('path', config.get('path', '')))
                 if save_path:
